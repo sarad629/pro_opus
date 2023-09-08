@@ -1,0 +1,53 @@
+{% extends 'template.html' %}
+
+
+{% block title %} ProOpus - Tasks {% endblock %}
+
+{% block content %} 
+
+<h1>ProOpus - Tasks</h1>
+
+
+<form method="POST" class="tasks" action="/tasks">
+
+    <label>Enter your task title:</label>
+    <input type="text" name="new-task-title" id="new-task-title">
+
+    <label>Enter your task description:</label>
+    <textarea name="new-task-desc" id="new-task-desc"></textarea>
+
+    <input type="submit" value="Assign Task" id="submit-task"></input>
+    <input type="hidden" name="due-date" value="{{ dueDate }}" id="due">
+
+</form>
+
+<div class="taskList">
+
+    <form method="POST">
+        {% for index, task in enumerate(taskList)  %}
+            <div class="taskSection" id="{{ task.id }}">
+                <b><p id="taskTitle">{{ task.title }}</p></b>
+                <p id="taskDesc">{{ task.desc }}</p>
+            </div>
+        {% endfor %}
+        <input type="hidden" name="to-delete-task" value="" id="delete">
+        <input type="hidden" name="due-date" value="{{ dueDate }}" id="due">
+    </form>
+
+</div>
+
+<script>
+
+    $(".taskSection").click(function () {
+        let indexId = $(this).attr("id")
+        $("#delete").attr("value", indexId)
+
+        $(".taskList form").submit()
+
+    })
+    
+</script>
+
+
+
+{% endblock %}

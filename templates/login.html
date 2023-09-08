@@ -1,0 +1,37 @@
+{% extends 'template.html' %}
+
+
+{% block title %} ProOpus - Log In {% endblock %}
+
+{% block content %} 
+
+<h1>ProOpus - Log In</h1>
+
+    {% if 'loginStatus' in session %}
+
+    <p>{{ session["loginStatus"] }}</p>
+
+    {% endif %}
+
+    <form method="POST" id="log-in-form">
+
+        <label>Enter your username:</label>
+        <input type="text" name="username-login" id="username-login">
+
+
+        <label>Enter your password:</label>
+        <input type="password" name="password-login" id="password">
+        
+
+        <label>Check to create new user:</label>
+        <input type="checkbox" name="new-user" id="check">
+
+
+        <input type="submit" value="Login" name="login-submit" id="login-submit"></input>
+        
+
+    </form>
+
+    
+
+{% endblock %}

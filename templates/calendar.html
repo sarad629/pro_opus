@@ -1,0 +1,75 @@
+{% extends 'template.html' %}
+
+
+{% block title %} ProOpus - Calendar {% endblock %}
+
+{% block content %} 
+
+<h1>ProOpus - Calendar</h1>
+
+<div id="dateStatus">
+    <p><span class="larr">&larr;</span>
+    <span>{{date.strftime("%B %d, %Y")}}</span>
+    <span class="rarr">&rarr;</span></p>
+</div>
+
+<div id="calendarFormat">
+
+    {{ monthHTMLCalendar | safe }}
+
+</div>
+
+<script>
+
+    $("td").click(function () {
+        let selectDate = $(this).html()
+        if (selectDate.length <= 1) {
+            selectDate = "0" + selectDate
+        }
+        else if (selectDate.length > 3 ) {
+            return
+        }
+        let selectMonth = `{{date.strftime("%m-%Y")}}`
+        let dueDate = selectDate + "-" + selectMonth
+
+        let queryDate = "?due=" + dueDate
+
+
+        window.location.href = `{{url_for('task')}}` + queryDate
+    })
+
+    $(".larr").click(function () {
+        let selectMonth = Number("{{date.month}}");
+        let selectYear = Number("{{date.year}}");
+
+        let newMonth =  selectMonth - 1
+        
+
+        if ((newMonth) <= 0 ) {
+            newMonth = 12
+            selectYear -= 1  
+        }
+        let queryDate = "?month=" + newMonth + "&year=" + selectYear
+        window.location.href = `{{url_for('calendaire')}}` + queryDate
+            
+    })
+
+    $(".rarr").click(function () {
+        let selectMonth = Number("{{date.month}}");
+        let selectYear = Number("{{date.year}}");
+
+        let newMonth =  selectMonth + 1
+        
+
+        if ((newMonth) > 12 ) {
+            newMonth = 1
+            selectYear += 1  
+        }
+        let queryDate = "?month=" + newMonth + "&year=" + selectYear
+        window.location.href = `{{url_for('calendaire')}}` + queryDate
+            
+    })
+
+</script>
+
+{% endblock %}

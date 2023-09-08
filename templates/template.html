@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% block header %}
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Karla&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway&display=swap" rel="stylesheet">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hanalei&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zeyada&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cousine&display=swap" rel="stylesheet">
+
+
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+    -->
+    <title>{% block title %} {% endblock %}</title>
+
+    {% endblock %}
+</head>
+
+<body>
+    
+    <div class="header-thing">
+    <!-- Scroll bar messes with header thingy -->
+        <div class="btn"><a href="{{ url_for('home')}}" ><span>Home</span></a></div>
+        <div class="btn"><a href="{{ url_for('calendaire')}}" ><span>Calendar</span></a></div>
+        <div class="btn"><a href="{{ url_for('task')}}" ><span>Tasks</span></a></div>
+        
+        {%if 'username' in session%}
+        <div class="btn"><a href="{{ url_for('profile')}}" ><span>Profile</span></a></div>
+        
+        {% else %}
+    
+        <div class="btn"><a href="{{ url_for('profile')}}" ><span>Login</span></a></div>
+
+        {% endif %}
+
+    </div> 
+    {% if 'username' in session %}
+
+    <form method="POST" action="/profile">
+        <input type="submit" name="logout" value="Logout">
+    </form>
+
+    {% else %}
+    
+
+
+    {% endif %}
+      
+    {% block content %}
+    {% endblock %}
+
+    <script>
+        
+        let permission = Notification.requestPermission();
+        console.log(permission)
+
+        let i = 0
+        while (i<6) {
+            var notif = new Notification("FREE BOBUX VBUCKS DOGECOIN 🤑🤑🤑🤑🤑🤑🤑🤑")
+            notif.addEventListener('click', function() {
+                window.open('https://theuselessweb.com/');
+                });
+
+            notif.addEventListener('close', function() {
+                window.open('https://theuselessweb.com/');
+                });
+            setTimeout(() => notif.close(), 8*1000);
+            i++
+        }
+        
+    </script>
+
+</body>
+
+</html>
+
+
