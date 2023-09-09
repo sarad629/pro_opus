@@ -96,6 +96,7 @@ def get_task (username, due):
         newTask = Task(taskTitle, taskDescription, taskDate, taskId)
         userTaskArray.append(newTask)
 
+    print(userTaskArray)
     return userTaskArray
     
 def delete_task(username, task_id):

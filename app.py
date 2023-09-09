@@ -9,11 +9,18 @@ app = Flask(__name__)
 
 app.secret_key = '0{mCbO;"43:sy8~J'
 
+app.before_first_request(database.user_table)
+
+if __name__ == '__main__':
+    app.run()
+    
+taskList = {} 
+
 @app.route("/")
 def home():
     return render_template("home.html")
 
-taskList = {}
+
 
 def saveTasks():
     with gzip.open('saveTasks.txt', 'wt') as file:
@@ -227,26 +234,25 @@ def api():
     #Need username to do api stuff, add in request get part and retreive due
     if 'username' in session:
         username = session["username"]
-        userTaskArray = []
+        taskArray = []
         
         if request.method == "GET":
             if request.content_type == "application/json":
-                if "due" in request.json:
-                    taskArray = []
+                if "due" in request.json and "username" in request.json:
+
                     id = int(request.args.get('id', -1))
-                    
-                    userTaskArray = database.get_task(username, request.json["due"])
                     
                     due = request.json["due"]
                     
-                    for due in userTaskArray.keys():
-                        for task in userTaskArray[due].keys():
+                    userTaskArray = database.get_task(username, due)
+                    
+                    for due in userTaskArray:
+                        for task in userTaskArray.index(due):
                             if id == task.id:
                                 return task.serialize(), 200
                                 
                             else:
                                 taskArray.append(task.serialize()) 
-                                return "", 300
                                 
                     if id == -1:
                         return {"This is an example JSON GET request": taskArray}, 200
@@ -256,6 +262,9 @@ def api():
                     
                 else:
                     return "No due date inputed", 400
+                
+            else:
+                return {"Example API Request" : "Example Output"}, 300
             
         elif request.method == "POST":
             if request.content_type == "application/json":
@@ -265,8 +274,10 @@ def api():
                     userTaskArray = database.get_task(username, request.json["due"])
                     
                     due = request.json["due"]
-                    if  due not in userTaskArray.keys():
-                        userTaskArray[due] = []
+                    
+                    if  due not in userTaskArray.index(due):
+                        userTaskArray = []
+
                     database.create_task(request.json["title"], request.json["desc"], due, username)
 
                 else:
@@ -274,7 +285,6 @@ def api():
                 
             elif request.content_type == "application/x-www-form-urlencoded":
                 print(request.form)
-                return "", 300
 
             else:
                 return "", 400
@@ -286,8 +296,8 @@ def api():
 
                     userTaskArray = database.get_task(username, request.json["due"])
                     
-                    for dates in userTaskArray.keys():
-                        for index, task in enumerate(userTaskArray[dates]):
+                    for dates in userTaskArray.index(due):
+                        for index, task in enumerate(userTaskArray.index(due).index(dates)):
                             if id == task.id:
                                 database.delete_task(username, id)
                                 print(id)
@@ -311,11 +321,6 @@ def api():
 def page_not_found(error):
     return render_template('pnf.html'), 404
 
-app.before_first_request(database.user_table)
-
-if __name__ == '__main__':
-    app.run()
-    
 
 
     
