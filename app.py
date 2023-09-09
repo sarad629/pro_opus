@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, request, redirect, session
-import calendar, datetime
+import calendar, datetime, gzip, os, database
 import gzip
 import os
 import database
@@ -12,10 +12,6 @@ app.secret_key = '0{mCbO;"43:sy8~J'
 @app.route("/")
 def home():
     return render_template("home.html")
-
-@app.route("/account")
-def account():
-    return render_template("account.html")
 
 taskList = {}
 
@@ -113,9 +109,6 @@ def calendaire():
     date = datetime.datetime.now()
     year = int(request.args.get('year', date.year))
     month = int(request.args.get('month', date.month))
-
-    #if statement for checking if date exists in the month (if day is more than for selected months maximum date, make it is less or equal than)
-    
 
     c = calendar.Calendar(6)
     #Represents the day, sunday
@@ -227,75 +220,77 @@ def profile():
             
         else:
             return render_template("login.html"), 400
-
-@app.errorhandler(404)
-def page_not_found(error):
-    return render_template('pnf.html'), 404
-
-#app.before_first_request(readTask)
-app.before_first_request(database.user_table)
-
-if __name__ == '__main__':
-    app.run()
-
+        
 #Replace tasklist index with due, userarray thiny to be changed to deatabase func, get_task/delete_taskl
 @app.route("/api", methods=["GET", "POST", "DELETE"])
 def api():
     #Need username to do api stuff, add in request get part and retreive due
     if 'username' in session:
         username = session["username"]
-        if request.method == "GET":
-            taskArray = []
-            #For api serialization
-            id = int(request.args.get('id', -1))
-            #userTaskList = database.get_task(username, due)
-            for dates in taskList.keys():
-                for task in taskList[dates]:
-                    if id == task.id:
-                        return task.serialize(), 200
-                        
-                    else:
-                        taskArray.append(task.serialize()) 
-
-            if id == -1:
-                return {"i <3 tronald dump and boe jiden": taskArray}, 200
-            
-            else:
-                return "Id not found/doesn't exist", 404
+        userTaskArray = []
         
+        if request.method == "GET":
+            if request.content_type == "application/json":
+                if "due" in request.json:
+                    taskArray = []
+                    id = int(request.args.get('id', -1))
+                    
+                    userTaskArray = database.get_task(username, request.json["due"])
+                    
+                    due = request.json["due"]
+                    
+                    for due in userTaskArray.keys():
+                        for task in userTaskArray[due].keys():
+                            if id == task.id:
+                                return task.serialize(), 200
+                                
+                            else:
+                                taskArray.append(task.serialize()) 
+                                return "", 300
+                                
+                    if id == -1:
+                        return {"This is an example JSON GET request": taskArray}, 200
+                    
+                    else:
+                        return "Id not found/doesn't exist", 404
+                    
+                else:
+                    return "No due date inputed", 400
+            
         elif request.method == "POST":
             if request.content_type == "application/json":
                 if "title" in request.json and "desc" in request.json and "due" in request.json:
                     postTask = Task(request.json["title"], request.json["desc"], request.json["due"])
                     
+                    userTaskArray = database.get_task(username, request.json["due"])
+                    
                     due = request.json["due"]
-                    if  due not in taskList:
-                        taskList[due] = []
-                    taskList[due].insert(0, postTask)
-                    saveTasks()
+                    if  due not in userTaskArray.keys():
+                        userTaskArray[due] = []
+                    database.create_task(request.json["title"], request.json["desc"], due, username)
 
                 else:
                     return "Missing data", 400
                 
             elif request.content_type == "application/x-www-form-urlencoded":
                 print(request.form)
+                return "", 300
 
             else:
                 return "", 400
-            
-            return "", 200
         
         elif request.method == "DELETE":
             if request.content_type == "application/json":
                 if "id" in request.json:
                     id = request.json["id"]
 
-                    for dates in taskList.keys():
-                        for index, task in enumerate(taskList[dates]):
+                    userTaskArray = database.get_task(username, request.json["due"])
+                    
+                    for dates in userTaskArray.keys():
+                        for index, task in enumerate(userTaskArray[dates]):
                             if id == task.id:
-                                taskList[dates].pop(index)
-                                print() 
-                                saveTasks()
+                                database.delete_task(username, id)
+                                print(id)
                                 return f"Task with an id of {id} deleted", 200
                         
                     return "Id not found", 400
@@ -304,12 +299,24 @@ def api():
                     return "Id missing", 400
                 
             else:
-                return "No you can't", 400
+                return "Only JSON API requests are permitted", 400
         
         else:
-            return "too bad", 200
+            return "Too bad", 200
 
     else:
-        return render_template("login.html"), 400
+        return render_template("login.html"), 300
+    
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template('pnf.html'), 404
+
+app.before_first_request(database.user_table)
+
+if __name__ == '__main__':
+    app.run()
+    
+
+
     
     
