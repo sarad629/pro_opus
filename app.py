@@ -21,7 +21,7 @@ def home():
     return render_template("home.html")
 
 
-
+"""
 def saveTasks():
     with gzip.open('saveTasks.txt', 'wt') as file:
         for date, tasks in taskList.items():
@@ -40,7 +40,9 @@ def saveTasks():
                 file.write(task.due)
                 file.write("\a")
                 file.write("\a")
+"""
 
+"""
 def readTask():
     global taskList
     if not os.path.isfile('saveTasks.txt'):
@@ -68,6 +70,7 @@ def readTask():
 
             except IndexError:
                 break
+"""
 
 @app.route("/tasks", methods=['GET','POST'])
 def task():
