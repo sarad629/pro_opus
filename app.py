@@ -257,6 +257,7 @@ def api():
                                 
                             else:
                                 taskArray.append(task.serialize()) 
+                                return "Id not found, here are some tasks", 300
                                 
                     if id == -1:
                         return {"This is an example JSON GET request": taskArray}, 200
