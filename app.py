@@ -4,6 +4,7 @@ import gzip
 import os
 import database
 from task import Task
+import logging
 
 app = Flask(__name__)
 

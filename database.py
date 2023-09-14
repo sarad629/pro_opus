@@ -1,5 +1,6 @@
 import sqlite3
 from task import Task
+import logging
 
 class Users:
     def __init__(self, username, password, display_name):
