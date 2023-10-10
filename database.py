@@ -1,6 +1,6 @@
 import sqlite3
 from task import Task
-import logging
+
 
 class Users:
     def __init__(self, username, password, display_name):
@@ -93,7 +93,6 @@ def get_task (username, due):
         taskTitle = task[1]
         taskDescription = task[2]
         taskDate = task[3]
-        #taskUserId = task[4]
         newTask = Task(taskTitle, taskDescription, taskDate, taskId)
         userTaskArray.append(newTask)
 
@@ -109,3 +108,4 @@ def delete_task(username, task_id):
 
     result = cursor.execute("DELETE FROM tasks WHERE user_id = %d AND task_id = %d " % (user_id, task_id))
     connection.commit()
+    

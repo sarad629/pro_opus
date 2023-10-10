@@ -1,19 +1,15 @@
 from flask import Flask, render_template, url_for, request, redirect, session
-import calendar, datetime, gzip, os, database
-import gzip
-import os
-import database
+import calendar, datetime, os, database
 from task import Task
-import logging
 
 app = Flask(__name__)
 
 app.secret_key = '0{mCbO;"43:sy8~J'
 
-app.before_first_request(database.user_table)
-
 if __name__ == '__main__':
     app.run()
+
+app.before_first_request(database.user_table)
     
 taskList = {} 
 
@@ -21,57 +17,6 @@ taskList = {}
 def home():
     return render_template("home.html")
 
-
-"""
-def saveTasks():
-    with gzip.open('saveTasks.txt', 'wt') as file:
-        for date, tasks in taskList.items():
-            file.write(date)
-            file.write("\a")
-            file.write(str((len(tasks))))
-            file.write("\a")
-            for task in tasks:
-                idStr = str(task.id)
-                file.write(idStr)
-                file.write("\a")
-                file.write(task.title)
-                file.write("\a")
-                file.write(task.desc)
-                file.write("\a")
-                file.write(task.due)
-                file.write("\a")
-                file.write("\a")
-"""
-
-"""
-def readTask():
-    global taskList
-    if not os.path.isfile('saveTasks.txt'):
-        return 
-    with gzip.open('saveTasks.txt', 'rt') as file:
-        fileString = file.read().split("\a")
-        fileString.reverse()
-        while True:
-            try:
-                date = fileString.pop()
-                taskList[date] = []
-                lengthTasks = int(fileString.pop())
-
-                while lengthTasks > 0:
-                    fileString.pop()
-                    title = fileString.pop()
-                    desc = fileString.pop()
-                    due = fileString.pop()
-
-                    newTask = Task(title, desc, due)
-                    taskList[date].append(newTask)
-                    fileString.pop()
-
-                    lengthTasks = lengthTasks - 1
-
-            except IndexError:
-                break
-"""
 
 @app.route("/tasks", methods=['GET','POST'])
 def task():
@@ -85,9 +30,9 @@ def task():
                 taskDesc = request.form['new-task-desc']
                 if len(title) > 0:
                     database.create_task(title, taskDesc, due, username)
-                    #newTask = Task(task, taskDesc, due)
+                    
                     return redirect("/tasks" + "?due=" + due, code=302)
-                
+                #https://dmitripavlutin.com/fetch-with-json/
                 else:
                     return 'Enter text next time, <a href="/tasks">Click me to go back</a>', 400
                 
@@ -106,7 +51,6 @@ def task():
             due = request.args.get('due', datetime.datetime.now().strftime("%d-%m-%Y"))
 
             userTaskList = database.get_task(username, due)
-
             return render_template("tasks.html", taskList=userTaskList, enumerate=enumerate, dueDate=due)         
     
     else:
@@ -161,9 +105,7 @@ def calendaire():
         output += "</td>\n"
 
         if t[3] == 5:
-            output+= "\t</tr>\n"
-
-    
+            output+= "\t</tr>\n"  
 
     output += "\n </table>"
 
@@ -240,19 +182,19 @@ def api():
         username = session["username"]
         taskArray = []
         
+        
         if request.method == "GET":
-            if request.content_type == "application/json":
+            if request.content_type == "application/json": #Error occuring here
                 if "due" in request.json and "username" in request.json:
-
-                    id = int(request.args.get('id', -1))
                     
+                    taskId = request.json["id"]
                     due = request.json["due"]
-                    
+
                     userTaskArray = database.get_task(username, due)
                     
                     for due in userTaskArray:
-                        for task in userTaskArray.index(due):
-                            if id == task.id:
+                        for task in userTaskArray[due]:
+                            if taskId == task.id:
                                 return task.serialize(), 200
                                 
                             else:
@@ -274,11 +216,11 @@ def api():
         elif request.method == "POST":
             if request.content_type == "application/json":
                 if "title" in request.json and "desc" in request.json and "due" in request.json:
+                    
                     postTask = Task(request.json["title"], request.json["desc"], request.json["due"])
                     
-                    userTaskArray = database.get_task(username, request.json["due"])
-                    
                     due = request.json["due"]
+                    userTaskArray = database.get_task(username, due)
                     
                     if  due not in userTaskArray.index(due):
                         userTaskArray = []
@@ -297,16 +239,16 @@ def api():
         elif request.method == "DELETE":
             if request.content_type == "application/json":
                 if "id" in request.json:
-                    id = request.json["id"]
+                    taskId = request.json["id"]
 
                     userTaskArray = database.get_task(username, request.json["due"])
                     
                     for dates in userTaskArray.index(due):
                         for index, task in enumerate(userTaskArray.index(due).index(dates)):
-                            if id == task.id:
+                            if taskId == task.id:
                                 database.delete_task(username, id)
-                                print(id)
-                                return f"Task with an id of {id} deleted", 200
+                                print(taskId)
+                                return f"Task with an id of {taskId} deleted", 200
                         
                     return "Id not found", 400
 
@@ -325,8 +267,3 @@ def api():
 @app.errorhandler(404)
 def page_not_found(error):
     return render_template('pnf.html'), 404
-
-
-
-    
-    
