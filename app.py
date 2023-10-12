@@ -30,7 +30,6 @@ def task():
                 taskDesc = request.form['new-task-desc']
                 if len(title) > 0:
                     database.create_task(title, taskDesc, due, username)
-                    
                     return redirect("/tasks" + "?due=" + due, code=302)
                 #https://dmitripavlutin.com/fetch-with-json/
                 else:
@@ -39,6 +38,7 @@ def task():
             elif "to-delete-task" in request.form.keys():
                 index = request.form['to-delete-task']
                 due = request.form['due-date']
+                
                 if len(index) > 0:
                     index = int(index)
                     database.delete_task(username, index)
@@ -182,36 +182,33 @@ def api():
         username = session["username"]
         taskArray = []
         
-        
         if request.method == "GET":
             if request.content_type == "application/json": #Error occuring here
                 if "due" in request.json and "username" in request.json:
                     
-                    taskId = request.json["id"]
+                    
+                    task_id = request.json["id"]
                     due = request.json["due"]
 
                     userTaskArray = database.get_task(username, due)
+                    task = database.get_task(username, due, 2)
+                    print(task.id)
                     
-                    for due in userTaskArray:
-                        for task in userTaskArray[due]:
-                            if taskId == task.id:
+                    for due in userTaskArray[due]:
+                        for task in userTaskArray[due][task]:
+                            if task_id == task.id:
+                                print(task.id)
                                 return task.serialize(), 200
                                 
                             else:
                                 taskArray.append(task.serialize()) 
                                 return "Id not found, here are some tasks", 300
-                                
-                    if id == -1:
-                        return {"This is an example JSON GET request": taskArray}, 200
-                    
-                    else:
-                        return "Id not found/doesn't exist", 404
-                    
+    
                 else:
                     return "No due date inputed", 400
                 
             else:
-                return {"Example API Request" : "Example Output"}, 300
+                return {"Example Task": "Example Result"}, 300
             
         elif request.method == "POST":
             if request.content_type == "application/json":
@@ -239,16 +236,16 @@ def api():
         elif request.method == "DELETE":
             if request.content_type == "application/json":
                 if "id" in request.json:
-                    taskId = request.json["id"]
+                    task_id = request.json["id"]
 
                     userTaskArray = database.get_task(username, request.json["due"])
                     
                     for dates in userTaskArray.index(due):
                         for index, task in enumerate(userTaskArray.index(due).index(dates)):
-                            if taskId == task.id:
+                            if task_id == task.id:
                                 database.delete_task(username, id)
-                                print(taskId)
-                                return f"Task with an id of {taskId} deleted", 200
+                                print(task_id)
+                                return f"Task with an id of {task_id} deleted", 200
                         
                     return "Id not found", 400
 

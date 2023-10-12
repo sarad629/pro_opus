@@ -95,7 +95,30 @@ def get_task (username, due):
         taskDate = task[3]
         newTask = Task(taskTitle, taskDescription, taskDate, taskId)
         userTaskArray.append(newTask)
+        
+    return userTaskArray
+        
+def return_all_tasks(username):
+    connection = sqlite3.connect("database.db")
+    cursor = connection.cursor()
 
+    result = cursor.execute("SELECT user_id FROM users WHERE username = '%s'"  % (username))
+    user_id = result.fetchone()[0]
+
+    result = cursor.execute("""SELECT * FROM tasks WHERE user_id = %d""" % (user_id))
+    
+    userTaskList = result.fetchall()
+    
+    userTaskArray = []
+    
+    for task in userTaskList:
+        taskId = task[0]
+        taskTitle = task[1]
+        taskDescription = task[2]
+        taskDate = task[3]
+        newTask = Task(taskTitle, taskDescription, taskDate, taskId)
+        userTaskArray.append(newTask)
+        
     print(userTaskArray)
     return userTaskArray
     
