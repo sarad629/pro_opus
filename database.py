@@ -8,7 +8,7 @@ class Users:
         self.password = password
         self.display_name = display_name
 
-def user_table():
+def initiate_tables():
     connection = sqlite3.connect("database.db")
     cursor = connection.cursor()
 
@@ -44,6 +44,7 @@ def create_user(username, password):
         ) """ % (username, password))
 
         connection.commit()
+        print("User Created")
         return True
     
     else:
@@ -72,7 +73,8 @@ def create_task(title, description, due, username):
                             '%d'
     )
     """ % (title, description, due, user_id))
-
+    
+    print("Task Created")
     connection.commit()
 
 
@@ -88,6 +90,7 @@ def get_task (username, due):
     userTaskList = result.fetchall()
     
     userTaskArray = []
+    
     for task in userTaskList:
         taskId = task[0]
         taskTitle = task[1]
@@ -96,6 +99,7 @@ def get_task (username, due):
         newTask = Task(taskTitle, taskDescription, taskDate, taskId)
         userTaskArray.append(newTask)
         
+    #print(userTaskArray)    
     return userTaskArray
         
 def return_all_tasks(username):
@@ -130,5 +134,6 @@ def delete_task(username, task_id):
     user_id = result.fetchone()[0]
 
     result = cursor.execute("DELETE FROM tasks WHERE user_id = %d AND task_id = %d " % (user_id, task_id))
+    print("Task deleted")
     connection.commit()
     

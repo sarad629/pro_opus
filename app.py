@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, request, redirect, session
-import calendar, datetime, os, database
+import calendar, datetime, os, database, json
 from task import Task
 
 app = Flask(__name__)
@@ -9,7 +9,7 @@ app.secret_key = '0{mCbO;"43:sy8~J'
 if __name__ == '__main__':
     app.run()
 
-app.before_first_request(database.user_table)
+app.before_first_request(database.initiate_tables)
     
 taskList = {} 
 
@@ -44,9 +44,12 @@ def task():
                     database.delete_task(username, index)
                     #Index is task id
                     return redirect("/tasks" + "?due=" + due, code=302)
-
+            
                 else:
                     return 'No tasks to delete, <a href="/tasks">Click me to go back</a>', 400
+                
+            else:
+                return "Invalid request", 400
         else:
             due = request.args.get('due', datetime.datetime.now().strftime("%d-%m-%Y"))
 
@@ -177,15 +180,17 @@ def profile():
 #Replace tasklist index with due, userarray thiny to be changed to deatabase func, get_task/delete_taskl
 @app.route("/api", methods=["GET", "POST", "DELETE"])
 def api():
-    #Need username to do api stuff, add in request get part and retreive due
+    taskArray = []
+    
     if 'username' in session:
         username = session["username"]
-        taskArray = []
+        print(request.method)
         
         if request.method == "GET":
-            if request.content_type == "application/json": #Error occuring here
-                if "due" in request.json and "username" in request.json:
-                    
+            print(request.content_type)
+            #Returning that there is no content type
+            if request.content_type == "application/json":
+                if "due" in request.json and "id" in request.json:
                     
                     task_id = request.json["id"]
                     due = request.json["due"]
@@ -194,8 +199,8 @@ def api():
                     task = database.get_task(username, due, 2)
                     print(task.id)
                     
-                    for due in userTaskArray[due]:
-                        for task in userTaskArray[due][task]:
+                    for due in userTaskArray:
+                        for task in userTaskArray[due]:
                             if task_id == task.id:
                                 print(task.id)
                                 return task.serialize(), 200
@@ -208,22 +213,33 @@ def api():
                     return "No due date inputed", 400
                 
             else:
-                return {"Example Task": "Example Result"}, 300
-            
+                return {"Example Task": taskArray}, 300
+        
         elif request.method == "POST":
+            print(request.content_type)
             if request.content_type == "application/json":
                 if "title" in request.json and "desc" in request.json and "due" in request.json:
                     
-                    postTask = Task(request.json["title"], request.json["desc"], request.json["due"])
-                    
                     due = request.json["due"]
+                    
+                    #might modify, als oneed to implment everywhere else
+                    if datetime.datetime.strptime(due, '%d-%m-%y'):
+                        dueString = json.dumps(due)
+                        
+                    else:
+                        return "Incorrect due date format", 400
+                    
                     userTaskArray = database.get_task(username, due)
                     
-                    if  due not in userTaskArray.index(due):
-                        userTaskArray = []
+                    if  dueString not in userTaskArray:
+                        userTaskarray = []
 
-                    database.create_task(request.json["title"], request.json["desc"], due, username)
-
+                    newTask = database.create_task(request.json["title"], request.json["desc"], due, username)
+                    taskArray.append(newTask)
+                    
+                    #Still not showing result
+                    return {due: taskArray}, 200
+                
                 else:
                     return "Missing data", 400
                 
@@ -234,6 +250,7 @@ def api():
                 return "", 400
         
         elif request.method == "DELETE":
+            print(request.content_type)
             if request.content_type == "application/json":
                 if "id" in request.json:
                     task_id = request.json["id"]
@@ -256,7 +273,8 @@ def api():
                 return "Only JSON API requests are permitted", 400
         
         else:
-            return "Too bad", 200
+            print(request.content_type)
+            return "Only application/json is accepted", 200
 
     else:
         return render_template("login.html"), 300
