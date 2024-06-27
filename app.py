@@ -1,13 +1,15 @@
 from flask import Flask, render_template, url_for, request, redirect, session
-import calendar, datetime
-import gzip
-import os
+import gzip, os, calendar, datetime
 import database
 from task import Task
 
 app = Flask(__name__)
-
 app.secret_key = '0{mCbO;"43:sy8~J'
+
+app.before_first_request(database.user_table)
+
+if __name__ == '__main__':
+    app.run()
 
 @app.route("/")
 def home():
@@ -97,7 +99,6 @@ def task():
                     return 'No tasks to delete, <a href="/tasks">Click me to go back</a>', 400
         else:
             due = request.args.get('due', datetime.datetime.now().strftime("%d-%m-%Y"))
-
             userTaskList = database.get_task(username, due)
 
             return render_template("tasks.html", taskList=userTaskList, enumerate=enumerate, dueDate=due)         
@@ -116,7 +117,6 @@ def calendaire():
 
     #if statement for checking if date exists in the month (if day is more than for selected months maximum date, make it is less or equal than)
     
-
     c = calendar.Calendar(6)
     #Represents the day, sunday
 
@@ -158,8 +158,6 @@ def calendaire():
 
         if t[3] == 5:
             output+= "\t</tr>\n"
-
-    
 
     output += "\n </table>"
 
@@ -232,28 +230,39 @@ def profile():
 def page_not_found(error):
     return render_template('pnf.html'), 404
 
-#app.before_first_request(readTask)
-app.before_first_request(database.user_table)
-
-if __name__ == '__main__':
-    app.run()
-
 #Replace tasklist index with due, userarray thiny to be changed to deatabase func, get_task/delete_taskl
 @app.route("/api", methods=["GET", "POST", "DELETE"])
 def api():
     #Need username to do api stuff, add in request get part and retreive due
+    #Figure out why taskList is empty
     if 'username' in session:
         username = session["username"]
         if request.method == "GET":
             taskArray = []
             #For api serialization
+            #Default
             id = int(request.args.get('id', -1, type=int))
             #userTaskList = database.get_task(username, due)
+            
+            #Used if given JSON fetch info, otherwise results to the default above
+            if request.headers.get('id'):
+                print("got the json header for id")
+                id = int(request.headers.get('id'))
+                print(id)
+            
+            if request.headers.get('due'):
+                print("got the json header for due")
+                due = request.headers.get('due')
+                print(due)
+            
             for dates in taskList.keys():
                 for task in taskList[dates]:
-                    if id == task.id:
+                    if id == task.id and due == task.due:
                         return task.serialize(), 200
-                        
+                    elif id == task.id:
+                        return task.serialize(), 200
+                    elif due == task.due:
+                        return task.serialize(),200
                     else:
                         taskArray.append(task.serialize()) 
 
@@ -311,5 +320,3 @@ def api():
 
     else:
         return render_template("login.html"), 400
-    
-    
