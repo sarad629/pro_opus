@@ -247,7 +247,7 @@ def api():
         if request.method == "GET":
             taskArray = []
             #For api serialization
-            id = int(request.args.get('id', -1))
+            id = int(request.args.get('id', -1, type=int))
             #userTaskList = database.get_task(username, due)
             for dates in taskList.keys():
                 for task in taskList[dates]:
@@ -258,7 +258,7 @@ def api():
                         taskArray.append(task.serialize()) 
 
             if id == -1:
-                return {"i <3 tronald dump and boe jiden": taskArray}, 200
+                return {"tronald dump and boe jiden": taskArray}, 200
             
             else:
                 return "Id not found/doesn't exist", 404
