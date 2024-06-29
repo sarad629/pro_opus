@@ -243,7 +243,6 @@ def api():
         if request.method == "GET":
             userTaskArray = []
                   
-            #Could use request.args.get if we make the api more functional
             #Default
             id = int(request.args.get("id", -1, type=int))
             
