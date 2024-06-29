@@ -245,7 +245,7 @@ def api():
                   
             #Could use request.args.get if we make the api more functional
             #Default
-            id = request.args.get("id", -1, type=int)
+            id = int(request.args.get("id", -1, type=int))
             
             if id != -1:
                 userTaskList = database.get_task_by_id(username, id)
@@ -260,7 +260,7 @@ def api():
             if request.headers.get('id'):
                 id = int(request.headers.get('id'))
                 userTaskList = database.get_task_by_id(username, id)
-                if len(userTaskArray) > 0:
+                if len(userTaskList) > 0:
                     #So close but it's not redirecting for some reason
                     return redirect("/api?id=%d" % id, code=302)
                 else:
@@ -275,24 +275,6 @@ def api():
                     userTaskArray.append(task.serialize())
                 print(userTaskArray)    
                 print(due)  """ 
-                
-            #Needs to pull information from taskList but its empty :/
-            """for dates in taskList.keys():
-                print("got date")
-                for task in taskList[dates]:
-                    print("got tasks")
-                    if id == task.id and due == task.due:
-                        print(task.serializ())
-                        return task.serialize(), 200
-                    elif id == task.id:
-                        print(task.serializ())
-                        return task.serialize(), 200
-                    elif due == task.due:
-                        print(task.serializ())
-                        return task.serialize(),200
-                    else:
-                        #Just prints all the tasks with that due date
-                        userTaskArray.append(task.serialize()) """
 
             if id == -1:
                 return {"Default": userTaskArray}, 200
