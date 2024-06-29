@@ -5,6 +5,7 @@ from task import Task
 
 app = Flask(__name__)
 app.secret_key = '0{mCbO;"43:sy8~J'
+app.debug = True
 
 app.before_first_request(database.user_table)
 
@@ -244,28 +245,36 @@ def api():
                   
             #Could use request.args.get if we make the api more functional
             #Default
-            id = int(request.args.get("id", -1, type=int))
+            id = request.args.get("id", -1, type=int)
             
-            #Used if given JSON fetch info, otherwise results to the default above
-            if request.headers.get('id'):
-                print("got the json header for id")
-                id = int(request.headers.get('id'))
+            if id != -1:
                 userTaskList = database.get_task_by_id(username, id)
                 for task in userTaskList:
-                    print(task.serialize())
                     userTaskArray.append(task.serialize())
-                print("here")
-                #Error
-                #Second solution would be to make all the IDs a unique string
-                return redirect("/ap?id=%d" % id, code=302)
+                if len(userTaskArray) > 0:
+                    return {"Tasks found": userTaskArray}, 200
+                else:
+                    return "No tasks found", 404
+                
+            #Used if given JSON fetch info, otherwise results to the default above
+            if request.headers.get('id'):
+                id = int(request.headers.get('id'))
+                userTaskList = database.get_task_by_id(username, id)
+                if len(userTaskArray) > 0:
+                    #So close but it's not redirecting for some reason
+                    return redirect("/api?id=%d" % id, code=302)
+                else:
+                    return redirect("/api", code=404)
             
-            if request.headers.get('due'):
+            #Will create a due one later
+            """if request.headers.get('due'):
                 print("got the json header for due")
                 due = request.headers.get('due')
                 userTaskList = database.get_task(username, due)
                 for task in userTaskList:
-                    print(task.due)
-                print(due)   
+                    userTaskArray.append(task.serialize())
+                print(userTaskArray)    
+                print(due)  """ 
                 
             #Needs to pull information from taskList but its empty :/
             """for dates in taskList.keys():
@@ -286,10 +295,10 @@ def api():
                         userTaskArray.append(task.serialize()) """
 
             if id == -1:
-                return {"tronald dump and boe jiden": userTaskArray}, 200
+                return {"Default": userTaskArray}, 200
             
             else:
-                return "Id not found/doesn't exist", 404 
+                return "Not found", 404
         
         elif request.method == "POST":
             if request.content_type == "application/json":

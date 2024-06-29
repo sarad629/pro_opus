@@ -12,6 +12,6 @@ class Task:
         return {
             "title": self.title,
             "description": self.desc,
-            "id": self.id,
             "due": self.due,
+            "id": self.id
         }
