@@ -255,8 +255,9 @@ def api():
                     print(task.serialize())
                     userTaskArray.append(task.serialize())
                 print("here")
-                #Need to find a way for it to reload and add the userTaskArray to the reload
-                return redirect(f"/ap?id={id}", code=302)
+                #Error
+                #Second solution would be to make all the IDs a unique string
+                return redirect("/ap?id=%d" % id, code=302)
             
             if request.headers.get('due'):
                 print("got the json header for due")
