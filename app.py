@@ -11,6 +11,8 @@ app.before_first_request(database.user_table)
 if __name__ == '__main__':
     app.run()
 
+taskList = {}
+
 @app.route("/")
 def home():
     return render_template("home.html")
@@ -18,8 +20,6 @@ def home():
 @app.route("/account")
 def account():
     return render_template("account.html")
-
-taskList = {}
 
 def saveTasks():
     with gzip.open('saveTasks.txt', 'wt') as file:
@@ -67,7 +67,7 @@ def readTask():
 
             except IndexError:
                 break
-
+    
 @app.route("/tasks", methods=['GET','POST'])
 def task():
     if 'username' in session:
@@ -100,6 +100,7 @@ def task():
         else:
             due = request.args.get('due', datetime.datetime.now().strftime("%d-%m-%Y"))
             userTaskList = database.get_task(username, due)
+
 
             return render_template("tasks.html", taskList=userTaskList, enumerate=enumerate, dueDate=due)         
     
@@ -237,40 +238,57 @@ def api():
     #Figure out why taskList is empty
     if 'username' in session:
         username = session["username"]
+        
         if request.method == "GET":
-            taskArray = []
-            #For api serialization
+            userTaskArray = []
+                  
+            #Could use request.args.get if we make the api more functional
             #Default
-            id = int(request.args.get('id', -1, type=int))
-            #userTaskList = database.get_task(username, due)
+            id = int(request.args.get("id", -1, type=int))
             
             #Used if given JSON fetch info, otherwise results to the default above
             if request.headers.get('id'):
                 print("got the json header for id")
                 id = int(request.headers.get('id'))
-                print(id)
+                userTaskList = database.get_task_by_id(username, id)
+                for task in userTaskList:
+                    print(task.serialize())
+                    userTaskArray.append(task.serialize())
+                print("here")
+                #Need to find a way for it to reload and add the userTaskArray to the reload
+                return redirect(f"/ap?id={id}", code=302)
             
             if request.headers.get('due'):
                 print("got the json header for due")
                 due = request.headers.get('due')
-                print(due)
-            
-            for dates in taskList.keys():
+                userTaskList = database.get_task(username, due)
+                for task in userTaskList:
+                    print(task.due)
+                print(due)   
+                
+            #Needs to pull information from taskList but its empty :/
+            """for dates in taskList.keys():
+                print("got date")
                 for task in taskList[dates]:
+                    print("got tasks")
                     if id == task.id and due == task.due:
+                        print(task.serializ())
                         return task.serialize(), 200
                     elif id == task.id:
+                        print(task.serializ())
                         return task.serialize(), 200
                     elif due == task.due:
+                        print(task.serializ())
                         return task.serialize(),200
                     else:
-                        taskArray.append(task.serialize()) 
+                        #Just prints all the tasks with that due date
+                        userTaskArray.append(task.serialize()) """
 
             if id == -1:
-                return {"tronald dump and boe jiden": taskArray}, 200
+                return {"tronald dump and boe jiden": userTaskArray}, 200
             
             else:
-                return "Id not found/doesn't exist", 404
+                return "Id not found/doesn't exist", 404 
         
         elif request.method == "POST":
             if request.content_type == "application/json":

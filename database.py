@@ -75,6 +75,7 @@ def create_task(title, description, due, username):
     connection.commit()
 
 
+
 def get_task (username, due):
     connection = sqlite3.connect("database.db")
     cursor = connection.cursor()
@@ -93,6 +94,28 @@ def get_task (username, due):
         taskDescription = task[2]
         taskDate = task[3]
         #taskUserId = task[4]
+        newTask = Task(taskTitle, taskDescription, taskDate, taskId)
+        userTaskArray.append(newTask)
+
+    return userTaskArray
+
+def get_task_by_id (username, task_id):
+    connection = sqlite3.connect("database.db")
+    cursor = connection.cursor()
+
+    result = cursor.execute("SELECT user_id FROM users WHERE username = '%s'"  % (username))
+    user_id = result.fetchone()[0]
+
+    result = cursor.execute("""SELECT * FROM tasks WHERE user_id = %d AND task_id = %d """ % (user_id, task_id))
+    
+    userTaskList = result.fetchall()
+    
+    userTaskArray = []
+    for task in userTaskList:
+        taskId = task[0]
+        taskTitle = task[1]
+        taskDescription = task[2]
+        taskDate = task[3]
         newTask = Task(taskTitle, taskDescription, taskDate, taskId)
         userTaskArray.append(newTask)
 

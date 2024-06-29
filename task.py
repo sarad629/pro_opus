@@ -5,7 +5,7 @@ class Task:
         self.title = title
         self.desc = desc
         self.id = task_id
-        self.assign_date = datetime.datetime.now()
+        self.date_created = datetime.datetime.now()
         self.due = due
 
     def serialize(self):
@@ -13,5 +13,5 @@ class Task:
             "title": self.title,
             "description": self.desc,
             "id": self.id,
-            "due": self.due
+            "due": self.due,
         }
