@@ -219,7 +219,7 @@ def profile():
                     else:
                         return "Invalid Login", 400
  
-            else:
+            else: 
                 return "Not logged in to begin with... your problem", 400
 
         elif request.method == "GET": 
@@ -232,7 +232,6 @@ def profile():
 def page_not_found(error):
     return render_template('pnf.html'), 404
 
-#Replace tasklist index with due, userarray thiny to be changed to deatabase func, get_task/delete_taskl
 @app.route("/api", methods=["GET", "POST", "DELETE"])
 def api():
     #Need username to do api stuff, add in request get part and retreive due
