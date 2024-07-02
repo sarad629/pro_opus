@@ -58,10 +58,6 @@
         <input type="submit" name="logout" value="Logout">
     </form>
 
-    {% else %}
-    
-
-
     {% endif %}
       
     {% block content %}
@@ -69,7 +65,7 @@
 
     <script>
         
-        let permission = Notification.requestPermission();
+        /*let permission = Notification.requestPermission();
         console.log(permission)
 
         let i = 0
@@ -84,7 +80,7 @@
                 });
             setTimeout(() => notif.close(), 8*1000);
             i++
-        }
+        }*/
         
     </script>
 

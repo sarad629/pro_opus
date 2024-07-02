@@ -241,12 +241,21 @@ def api():
         
         if request.method == "GET":
             userTaskArray = []
-                  
+
             #Default
-            id = int(request.args.get("id", -1, type=int))
+            id = request.args.get("id", -1, type=int)
+            date = request.args.get("date", datetime.datetime.now().strftime("%d-%m-%Y"), type=str)
             
             if id != -1:
                 userTaskList = database.get_task_by_id(username, id)
+                for task in userTaskList:
+                    userTaskArray.append(task.serialize())
+                if len(userTaskArray) > 0:
+                    return {"Tasks found": userTaskArray}, 200
+                else:
+                    return "No tasks found", 404
+            elif date != datetime.datetime.now().strftime("%d-%m-%Y"):
+                userTaskList = database.get_task(username, date)
                 for task in userTaskList:
                     userTaskArray.append(task.serialize())
                 if len(userTaskArray) > 0:
@@ -263,19 +272,23 @@ def api():
                     #But the panel says it is...
                     return redirect("/api?id=%d" % id, code=302)
                 else:
-                    return redirect("/api", code=404)
-            
-            #Will create a due one later
-            """if request.headers.get('due'):
-                print("got the json header for due")
-                due = request.headers.get('due')
-                userTaskList = database.get_task(username, due)
+                    return "No tasks found"
+                
+            if request.headers.get('date'):
+                date = request.headers.get("date")
+                userTaskList = database.get_task(username, date)
+                if len(userTaskList) > 0:
+                    #So close but it's not redirecting for some reason
+                    #But the panel says it is...
+                    return redirect("/api?date=%s" % date, code=302)
+                else:
+                    return "No tasks found"
+
+            if id == -1 and date == datetime.datetime.now().strftime("%d-%m-%Y"):
+                userTaskList = database.get_all_tasks(username)
                 for task in userTaskList:
                     userTaskArray.append(task.serialize())
-                print(userTaskArray)    
-                print(due)  """ 
-
-            if id == -1:
+                
                 return {"Default": userTaskArray}, 200
             
             else:
