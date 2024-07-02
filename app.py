@@ -260,6 +260,7 @@ def api():
                 userTaskList = database.get_task_by_id(username, id)
                 if len(userTaskList) > 0:
                     #So close but it's not redirecting for some reason
+                    #But the panel says it is...
                     return redirect("/api?id=%d" % id, code=302)
                 else:
                     return redirect("/api", code=404)
